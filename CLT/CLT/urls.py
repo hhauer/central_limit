@@ -11,4 +11,5 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
 
     url(r'^$', include('clt_app.urls')),
+    url(r'^ajax/', include('ajax.urls')),
 )
