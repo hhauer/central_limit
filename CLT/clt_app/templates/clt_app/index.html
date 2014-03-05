@@ -1,5 +1,365 @@
+<!DOCTYPE html>
 <html>
-    <body>
-        <p>Test one.</p>
-    </body>
+  <meta charset="utf-8">
+  <head>
+  <style>
+    .bar {
+      fill: steelblue;
+    }
+
+    .bar:hover {
+      fill: brown;
+    }
+
+    .axis {
+      font: 10px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    .x.axis path {
+      display: none;
+    }
+
+    .btn {
+      border: 1px solid black;
+    }
+    .btn_start {
+      border: 1px solid black;
+      background: green;
+    }
+    .btn_stop {
+      border: 1px solid black;
+      background: red;
+    }
+  </style>
+  </head>
+  <body>
+    <h1>The Central Limit Theorem</h1>
+    <p>
+    From <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Wikipedia</a>:<br />
+    In probability theory, the central limit theorem (CLT) states that, given certain conditions, the arithmetic mean of a sufficiently large number of iterates of independent random variables, each with a well-defined expected value and well-defined variance, will be approximately normally distributed.[1] That is, suppose that a sample is obtained containing a large number of observations, each observation being randomly generated in a way that does not depend on the values of the other observations, and that the arithmetic average of the observed values is computed. If this procedure is performed many times, the central limit theorem says that the computed values of the average will be distributed according to the normal distribution (commonly known as a "bell curve").
+    </p>
+
+    <p>
+    Whew. I don't know about you, but that sounds complicated. To state it simply though:<br />
+    TODO:
+    </p>
+
+    <p>
+    Let's start by looking at randomness in general. The next graph shows how many times a given number is returned by a random number generator choosing a number between 1 and 10.<br />
+    (This example uses Python's cryptographically secure random number generator.)
+    </p>
+    <div id="graph1_cont">
+      <span id="graph1_toggle" class="btn_start" onClick="toggleGraph1()">Start</span> (ms between requests: <input type="text" id="graph1_speed" value="100">)
+      <span id="graph1_reset" class="btn" onClick="resetGraph1()">Reset</span>
+      Number of Samples: <span id="graph1_counter">0</span>
+      <div id="graph1"></div>
+    </div>
+
+    <p>
+    That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers.
+    </p>
+
+    <p>
+    So in our next scenario we'll try something else. Imagine we create a very long list of random 1's and 0's. Then take a <i>sample</i> by pulling out 50 characters of that string, and count the number of 0's in that sample.<br />
+    What would you expect the graph of those results to look like?
+    </p>
+
+    <div id="graph2_cont">
+      <span id="graph2_toggle" class="btn_start" onClick="toggleGraph2()">Start</span> (ms between requests: <input type="text" id="graph2_speed" value="100">)
+      <span id="graph2_reset" class="btn" onClick="resetGraph2()">Reset</span>
+      Number of Samples: <span id="graph2_counter">0</span>
+      <div id="graph2"></div>
+    </div>
+
+    <p>
+    You may have to let it run for a bit before the curve really smooths out, try waiting for at least a thousand samples, but in the end you should begin to see a nice bell curve!<br />
+    This perfectly illustrates the idea of the Central Limit Theorem!
+    </p>
+
+
+    <div id="infobox" style="display:none; background:red; position:absolute;"></div>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 760 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    var tooltipOver = function() {
+      //var circle = d3.select(this);
+      //circle.attr("fill", "red" );
+
+      // show infobox div on mouseover.
+      // block means sorta "render on the page" whereas none would mean "don't render at all"
+      d3.select("#infobox").style("display", "block");
+      // add test to p tag in infobox
+      d3.select("#infobox").text(this.__data__.name + " occurred "+this.__data__.frequency+" times.");
+    }
+
+    var tooltipOut = function() {
+      //var circle = d3.select(this);
+      //circle.attr("fill", "steelblue" );
+      // display none removes element totally, whereas visibilty in last example just hid it
+      d3.select("#infobox").style("display", "none");
+    }
+
+    var tooltipMove = function() {
+      var infobox = d3.select("#infobox");
+      var coord = d3.mouse(this)
+
+      // now we just position the infobox roughly where our mouse is
+      infobox.style("left", coord[0] + 15 + "px" );
+      infobox.style("top", coord[1] + "px");
+    }
+
+    d3.select("body").on('mousemove', tooltipMove);
+
+
+    /********** GRAPH 1 **********/
+
+    // Set up and populate the data array for graph1
+    var g1_data = [];
+    var oneToEleven = new Array();
+    for(var i=0; i<11; i++) {
+      oneToEleven[i] = i;
+      g1_data[i] = {name: i, frequency:0 }
+    }
+
+    var g1_counter = 0;
+
+    var g1_barWidth = width/g1_data.length;
+
+    var g1_x = d3.scale.linear()
+              .domain(g1_data.map(function(d) { return d.name; }))
+              .range([1,width]);
+
+    var g1_y = d3.scale.linear()
+        .range([height, 0]);
+
+    var g1_xAxis = d3.svg.axis()
+        .scale(g1_x)
+        .orient("bottom");
+
+    var g1_yAxis = d3.svg.axis()
+        .scale(g1_y)
+        .orient("left");
+
+    var g1_svg = d3.select("#graph1").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Draw graph 1's initial state
+    g1_y.domain([0, d3.max(g1_data, function(d) { return d.frequency; })]);
+
+    g1_svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(g1_xAxis);
+
+    g1_svg.append("g")
+        .attr("class", "y-axis")
+        .call(g1_yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Frequency");
+
+    g1_svg.selectAll(".bar")
+        .data(g1_data)
+      .enter().append("rect")
+        .attr("transform", function(d, i) { return "translate(" + i * g1_barWidth + ",0)"; })
+        .attr("class", "bar")
+        //.attr("x", function(d) { return g1_x(d.name*g1_barWidth); })
+        .attr("width", g1_barWidth-4)//x.rangeBand())
+        .attr("y", function(d) { return g1_y(d.frequency); })
+        .attr("height", function(d) { return height - g1_y(d.frequency); })
+        .on("mouseover", tooltipOver)
+        .on("mouseout", tooltipOut);
+        //.append("text")
+        //  .attr("x", g1_x.rangeBand() / 2)
+        //  .text(function(d){ return d.name; });
+      //.transition().
+      //  .attr("y", function(d) { return y(d.frequency); })
+      //  .attr("height", function(d) { return height - y(d.frequency); });
+
+  function g1_redraw() {
+    g1_y.domain([0, d3.max(g1_data, function(d) { return d.frequency; })]);
+
+      function calcTicks() {
+        var m = d3.max(g1_data, function(d) { return d.frequency; })
+        if(m<10)
+          return m;
+        else
+          return 10;
+      }
+
+      g1_yAxis.ticks(calcTicks());
+      g1_svg.selectAll("g .y-axis")
+        .call(g1_yAxis);
+      g1_svg.selectAll("g .x-axis")
+        .call(g1_xAxis);
+
+      var bars = g1_svg.selectAll(".bar")
+        .data(g1_data)
+        .attr("y", function(d) { return g1_y(d.frequency); })
+        .attr("height", function(d) { return height-g1_y(d.frequency); })
+
+      d3.select("#graph1_counter").text(g1_counter);
+    }
+
+
+    function graph1_update() {
+      d3.json("/ajax/clt_app/crypto_random.json", function(err, j) { g1_data[j.data.integer].frequency++; g1_counter++; g1_redraw(); }).post()
+    }
+
+    var graph1TimerId;
+
+    function toggleGraph1(){
+      if(d3.select("#graph1_toggle").text() == "Start")
+      {
+        graph1TimerId = window.setInterval(graph1_update, document.getElementById("graph1_speed").value);
+        d3.select("#graph1_toggle").text("Stop").attr("class", "btn_stop");
+      }
+      else
+      {
+        window.clearInterval(graph1TimerId);
+        d3.select("#graph1_toggle").text("Start").attr("class", "btn_start");
+      }
+    }
+
+    function resetGraph1(){
+      g1_data.map(function(d){d.frequency=0;});
+      g1_counter = 0;
+      g1_redraw();
+    }
+
+    /********** GRAPH 2 **********/
+
+    // Set up and populate the data array for graph1
+    var g2_data = [];
+    var oneToFifty = new Array();
+    for(var i=0; i<50; i++) {
+      oneToFifty[i] = i;
+      g2_data[i] = {name: i, frequency:0 }
+    }
+
+    var g2_counter = 0;
+
+
+    var g2_x = d3.scale.linear()
+              .domain(oneToFifty)
+              .range([0,10]); // ,width
+
+    var g2_y = d3.scale.linear()
+        .range([height, 0]);
+
+    var g2_xAxis = d3.svg.axis()
+        .scale(g2_x)
+        .orient("bottom");
+
+    var g2_yAxis = d3.svg.axis()
+        .scale(g2_y)
+        .orient("left");
+
+    var g2_svg = d3.select("#graph2").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Draw graph 2's initial state
+    //x.domain(datv.map(function(d) { return d.name; }));
+    g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
+
+    g2_svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(g2_xAxis);
+
+    g2_svg.append("g")
+        .attr("class", "y-axis")
+        .call(g2_yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Frequency");
+
+    g2_svg.selectAll(".bar")
+        .data(g2_data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return g2_x(d.name); })
+        .attr("width", 5)//x.rangeBand())
+        .attr("y", function(d) { return g2_y(d.frequency); })
+        .attr("height", function(d) { return height - g2_y(d.frequency); })
+        .on("mouseover", tooltipOver)
+        .on("mouseout", tooltipOut);
+      //.transition().
+      //  .attr("y", function(d) { return y(d.frequency); })
+      //  .attr("height", function(d) { return height - y(d.frequency); });
+
+  function g2_redraw() {
+    g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
+
+      function calc2Ticks() {
+        var m = d3.max(g2_data, function(d) { return d.frequency; })
+        if(m<10)
+          return m;
+        else
+          return 10;
+      }
+
+      g2_yAxis.ticks(calc2Ticks());
+      g2_svg.selectAll("g .y-axis")
+         .call(g2_yAxis);
+
+      var bars = g2_svg.selectAll(".bar")
+        .data(g2_data)
+        .attr("y", function(d) { return g2_y(d.frequency); })
+        .attr("height", function(d) { return height-g2_y(d.frequency); })
+
+      d3.select("#graph2_counter").text(g2_counter);
+    }
+
+
+    function graph2_update() {
+      d3.json("/ajax/clt_app/random_slice.json", function(err, j) { g2_data[j.data.sample_count_0].frequency++; g2_counter++; g2_redraw(); }).post()
+    }
+
+    var graph2TimerId;
+
+    function toggleGraph2(){
+      if(d3.select("#graph2_toggle").text() == "Start")
+      {
+        graph2TimerId = window.setInterval(graph2_update, document.getElementById("graph2_speed").value);
+        d3.select("#graph2_toggle").text("Stop").attr("class", "btn_stop");
+      }
+      else
+      {
+        window.clearInterval(graph2TimerId);
+        d3.select("#graph2_toggle").text("Start").attr("class", "btn_start");
+      }
+    }
+
+    function resetGraph2(){
+      g2_data.map(function(d){d.frequency=0;});
+      g2_counter = 0;
+      g2_redraw();
+    }
+    </script>
+  </body>
 </html>
