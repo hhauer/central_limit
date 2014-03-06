@@ -3,6 +3,10 @@
   <meta charset="utf-8">
   <head>
   <style>
+    body {
+      font: 14px normal helvetica, sans-serif;
+    }
+
     .bar {
       fill: steelblue;
     }
@@ -28,27 +32,37 @@
 
     .btn {
       border: 1px solid black;
+      padding: 3px;
     }
     .btn_start {
       border: 1px solid black;
+      padding: 3px;
       background: green;
     }
     .btn_stop {
       border: 1px solid black;
+      padding: 3px;
       background: red;
     }
+
+    .quote {
+      margin-left: 50px;
+      padding-left: 15px;
+      border-left: 3px solid #ccc;
+    }
+
   </style>
   </head>
   <body>
     <h1>The Central Limit Theorem</h1>
     <p>
     From <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Wikipedia</a>:<br />
-    In probability theory, the central limit theorem (CLT) states that, given certain conditions, the arithmetic mean of a sufficiently large number of iterates of independent random variables, each with a well-defined expected value and well-defined variance, will be approximately normally distributed.[1] That is, suppose that a sample is obtained containing a large number of observations, each observation being randomly generated in a way that does not depend on the values of the other observations, and that the arithmetic average of the observed values is computed. If this procedure is performed many times, the central limit theorem says that the computed values of the average will be distributed according to the normal distribution (commonly known as a "bell curve").
+    <div class="quote">In probability theory, the central limit theorem (CLT) states that, given certain conditions, the arithmetic mean of a sufficiently large number of iterates of independent random variables, each with a well-defined expected value and well-defined variance, will be approximately normally distributed.[1] That is, suppose that a sample is obtained containing a large number of observations, each observation being randomly generated in a way that does not depend on the values of the other observations, and that the arithmetic average of the observed values is computed. If this procedure is performed many times, the central limit theorem says that the computed values of the average will be distributed according to the normal distribution (commonly known as a "bell curve").</div>
     </p>
 
     <p>
-    Whew. I don't know about you, but that sounds complicated. To state it simply though:<br />
-    TODO:
+    <b>Whew.</b> I don't know about you, but that sounds complicated. Let's try and state it simply:<br />
+    When you take many sample measurements, the mean of those samples will form a bell curve shaped (normal) distribution.
     </p>
 
     <p>
@@ -63,12 +77,23 @@
     </div>
 
     <p>
-    That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers.
+    That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers.<br />
+    Let's try the same experiment a second way, just to see. This time we're using python's standard (non-cryptographically-secure) random number generator.)
     </p>
 
+    <div id="graph1a_cont">
+      <span id="graph1a_toggle" class="btn_start" onClick="toggleGraph1a()">Start</span> (ms between requests: <input type="text" id="graph1a_speed" value="100">)
+      <span id="graph1a_reset" class="btn" onClick="resetGraph1a()">Reset</span>
+      Number of Samples: <span id="graph1a_counter">0</span>
+      <div id="graph1a"></div>
+    </div>
+
     <p>
-    So in our next scenario we'll try something else. Imagine we create a very long list of random 1's and 0's. Then take a <i>sample</i> by pulling out 50 characters of that string, and count the number of 0's in that sample.<br />
-    What would you expect the graph of those results to look like?
+    Leave either of these running for long enough, and repeat the experiment enough times, and you should notice no real pattern to this randomness. It could be slightly different each time, but you won't see any regular shape appearing time after time.<br />
+    This is how we expect random generation to behave, and we've now verified that our random number generation is working correctly.<br />
+    <br />
+    So in our next scenario we'll try something else. Imagine we use our verified random number generator to create a very long list of random 1's and 0's. Then take a <i>sample</i> by pulling out 50 characters of that string, and count the number of 0's in that sample.<br />
+    We'll take these samples, and graph them, showing us how many 0's appeared. What would you expect the graph of those results to look like? Let's give it a try!
     </p>
 
     <div id="graph2_cont">
@@ -80,7 +105,23 @@
 
     <p>
     You may have to let it run for a bit before the curve really smooths out, try waiting for at least a thousand samples, but in the end you should begin to see a nice bell curve!<br />
-    This perfectly illustrates the idea of the Central Limit Theorem!
+    This may not seem intuitive, but it perfectly illustrates the idea of the Central Limit Theorem! No matter what the underlying data is, these random samples will turn out to follow this normal curve.
+    </p>
+
+    <p>
+    But hold on... Could it be that our underlying data just leads us to this result? Would using a different dataset change the result? What if we used a very skewed dataset?<br />
+    Let's try the same experiment, but this time our very long number, rather than being filled with completely random 1's and 0's, will be filled with 75% 0's, followed by 25% 1's.
+    </p>
+
+    <div id="graph3_cont">
+      <span id="graph3_toggle" class="btn_start" onClick="toggleGraph3()">Start</span> (ms between requests: <input type="text" id="graph3_speed" value="100">)
+      <span id="graph3_reset" class="btn" onClick="resetGraph3()">Reset</span>
+      Number of Samples: <span id="graph3_counter">0</span>
+      <div id="graph3"></div>
+    </div>
+
+    <p>
+    This further confirms our theory, as we can see that the bell curve of normality centers right on the 75% mark.<br />
     </p>
 
 
@@ -179,8 +220,8 @@
         .on("mouseover", tooltipOver)
         .on("mouseout", tooltipOut);
 
-  function g1_redraw() {
-    g1_y.domain([0, d3.max(g1_data, function(d) { return d.frequency; })]);
+    function g1_redraw() {
+      g1_y.domain([0, d3.max(g1_data, function(d) { return d.frequency; })]);
 
       function calcTicks() {
         var m = d3.max(g1_data, function(d) { return d.frequency; })
@@ -229,6 +270,120 @@
       g1_counter = 0;
       g1_redraw();
     }
+
+
+    /********** GRAPH 1a **********/
+
+    // Set up and populate the data array for graph1
+    var g1a_data = [];
+    for(var i=0; i<11; i++) {
+      g1a_data[i] = {name: i, frequency:0 }
+    }
+
+    var g1a_counter = 0;
+
+    var g1a_barWidth = width/g1a_data.length;
+
+    var g1a_x = d3.scale.linear()
+              .domain(g1a_data.map(function(d) { return d.name; }))
+              .range([0, 70]);
+
+    var g1a_y = d3.scale.linear()
+        .range([height, 0]);
+
+    var g1a_xAxis = d3.svg.axis()
+        .scale(g1a_x)
+        .orient("bottom");
+
+    var g1a_yAxis = d3.svg.axis()
+        .scale(g1a_y)
+        .orient("left");
+
+    var g1a_svg = d3.select("#graph1a").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Draw graph 1's initial state
+    g1a_y.domain([0, d3.max(g1a_data, function(d) { return d.frequency; })]);
+
+    g1a_svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(g1a_xAxis);
+
+    g1a_svg.append("g")
+        .attr("class", "y-axis")
+        .call(g1a_yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Frequency");
+
+    g1a_svg.selectAll(".bar")
+        .data(g1a_data)
+      .enter().append("rect")
+        .attr("transform", function(d, i) { return "translate(" + i * g1a_barWidth + ",0)"; })
+        .attr("class", "bar")
+        .attr("width", g1a_barWidth-4)
+        .attr("y", function(d) { return g1a_y(d.frequency); })
+        .attr("height", function(d) { return height - g1a_y(d.frequency); })
+        .on("mouseover", tooltipOver)
+        .on("mouseout", tooltipOut);
+
+    function g1a_redraw() {
+      g1a_y.domain([0, d3.max(g1a_data, function(d) { return d.frequency; })]);
+
+      function calcTicks() {
+        var m = d3.max(g1a_data, function(d) { return d.frequency; })
+        if(m<10)
+          return m;
+        else
+          return 10;
+      }
+
+      g1a_yAxis.ticks(calcTicks());
+      g1a_svg.selectAll("g .y-axis")
+        .call(g1a_yAxis);
+      g1a_svg.selectAll("g .x-axis")
+        .call(g1a_xAxis);
+
+      var bars = g1a_svg.selectAll(".bar")
+        .data(g1a_data)
+        .attr("y", function(d) { return g1a_y(d.frequency); })
+        .attr("height", function(d) { return height-g1a_y(d.frequency); })
+
+      d3.select("#graph1a_counter").text(g1a_counter);
+    }
+
+    function graph1a_update() {
+      d3.json("/ajax/clt_app/random_integer.json", function(err, j) { g1a_data[j.data.integer].frequency++; g1a_counter++; g1a_redraw(); }).post()
+    }
+
+    var graph1aTimerId;
+
+    function toggleGraph1a(){
+      if(d3.select("#graph1a_toggle").text() == "Start")
+      {
+        graph1aTimerId = window.setInterval(graph1a_update, document.getElementById("graph1a_speed").value);
+        d3.select("#graph1a_toggle").text("Stop").attr("class", "btn_stop");
+      }
+      else
+      {
+        window.clearInterval(graph1aTimerId);
+        d3.select("#graph1a_toggle").text("Start").attr("class", "btn_start");
+      }
+    }
+
+    function resetGraph1a(){
+      g1a_data.map(function(d){d.frequency=0;});
+      g1a_counter = 0;
+      g1a_redraw();
+    }
+
 
     /********** GRAPH 2 **********/
 
@@ -293,8 +448,8 @@
         .on("mouseover", tooltipOver)
         .on("mouseout", tooltipOut);
 
-  function g2_redraw() {
-    g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
+    function g2_redraw() {
+      g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
 
       function calc2Ticks() {
         var m = d3.max(g2_data, function(d) { return d.frequency; })
@@ -340,6 +495,117 @@
       g2_data.map(function(d){d.frequency=0;});
       g2_counter = 0;
       g2_redraw();
+    }
+
+
+    /********** GRAPH 3 **********/
+
+    // Set up and populate the data array for graph1
+    var g3_data = [];
+    for(var i=0; i<50; i++) {
+      g3_data[i] = {name: i, frequency:0 }
+    }
+
+    var g3_counter = 0;
+
+
+    var g3_x = d3.scale.linear()
+              .domain(oneToFifty)
+              .range([0,10]); // ,width
+
+    var g3_y = d3.scale.linear()
+        .range([height, 0]);
+
+    var g3_xAxis = d3.svg.axis()
+        .scale(g3_x)
+        .orient("bottom");
+
+    var g3_yAxis = d3.svg.axis()
+        .scale(g3_y)
+        .orient("left");
+
+    var g3_svg = d3.select("#graph3").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Draw graph 3's initial state
+    g3_y.domain([0, d3.max(g3_data, function(d) { return d.frequency; })]);
+
+    g3_svg.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(g3_xAxis);
+
+    g3_svg.append("g")
+        .attr("class", "y-axis")
+        .call(g3_yAxis)
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 6)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Frequency");
+
+    g3_svg.selectAll(".bar")
+        .data(g3_data)
+      .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return g3_x(d.name); })
+        .attr("width", 5)//x.rangeBand())
+        .attr("y", function(d) { return g3_y(d.frequency); })
+        .attr("height", function(d) { return height - g3_y(d.frequency); })
+        .on("mouseover", tooltipOver)
+        .on("mouseout", tooltipOut);
+
+    function g3_redraw() {
+      g3_y.domain([0, d3.max(g3_data, function(d) { return d.frequency; })]);
+
+      function calc3Ticks() {
+        var m = d3.max(g3_data, function(d) { return d.frequency; })
+        if(m<10)
+          return m;
+        else
+          return 10;
+      }
+
+      g3_yAxis.ticks(calc3Ticks());
+      g3_svg.selectAll("g .y-axis")
+         .call(g3_yAxis);
+
+      var bars = g3_svg.selectAll(".bar")
+        .data(g3_data)
+        .attr("y", function(d) { return g3_y(d.frequency); })
+        .attr("height", function(d) { return height-g3_y(d.frequency); })
+
+      d3.select("#graph3_counter").text(g3_counter);
+    }
+
+
+    function graph3_update() {
+      d3.json("/ajax/clt_app/nonrandom_slice.json", function(err, j) { g3_data[j.data.sample_count_0].frequency++; g3_counter++; g3_redraw(); }).post()
+    }
+
+    var graph3TimerId;
+
+    function toggleGraph3(){
+      if(d3.select("#graph3_toggle").text() == "Start")
+      {
+        graph3TimerId = window.setInterval(graph3_update, document.getElementById("graph3_speed").value);
+        d3.select("#graph3_toggle").text("Stop").attr("class", "btn_stop");
+      }
+      else
+      {
+        window.clearInterval(graph3TimerId);
+        d3.select("#graph3_toggle").text("Start").attr("class", "btn_start");
+      }
+    }
+
+    function resetGraph3(){
+      g3_data.map(function(d){d.frequency=0;});
+      g3_counter = 0;
+      g3_redraw();
     }
     </script>
   </body>
