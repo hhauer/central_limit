@@ -99,7 +99,9 @@
     <div id="graph2_cont">
       <span id="graph2_toggle" class="btn_start" onClick="toggleGraph2()">Start</span> (ms between requests: <input type="text" id="graph2_speed" value="100">)
       <span id="graph2_reset" class="btn" onClick="resetGraph2()">Reset</span>
-      Number of Samples: <span id="graph2_counter">0</span>
+      Number of Samples: <span id="graph2_counter">0</span><br />
+      <input type="radio" class="gr2_rd" name="graph2_rd" value="random_slice" /> Random Samples<br />
+      <input type="radio" class="gr2_rd" name="graph2_rd" value="contig_random_slice" /> Contiguous Samples
       <div id="graph2"></div>
     </div>
 
@@ -110,13 +112,20 @@
 
     <p>
     But hold on... Could it be that our underlying data just leads us to this result? Would using a different dataset change the result? What if we used a very skewed dataset?<br />
-    Let's try the same experiment, but this time our very long number, rather than being filled with completely random 1's and 0's, will be filled with 750 0's, followed by 250 1's.
+    Let's try the same experiment, but this time our very long number, rather than being filled with completely random 1's and 0's, will be filled with 75% 0's, followed by 25% 1's.
+    There are three ways you can run the experiment:
+    1) Contiguous chunks of 50. (This takes a single block of 50 out of the list and counts it.
+    2) 50 random items out of our nonrandom list, but the list is only 1000 long.
+    3) 50 random items out of our nonrandom list, but the list is 10,000 items long.
     </p>
 
     <div id="graph3_cont">
       <span id="graph3_toggle" class="btn_start" onClick="toggleGraph3()">Start</span> (ms between requests: <input type="text" id="graph3_speed" value="100">)
       <span id="graph3_reset" class="btn" onClick="resetGraph3()">Reset</span>
-      Number of Samples: <span id="graph3_counter">0</span>
+      Number of Samples: <span id="graph3_counter">0</span><br />
+      <input type="radio" class="gr3_rd" name="graph3_rd" value="contig_nonrandom_slice" checked="true" /> Contiguous Normal (750 0's, 250 1's)<br />
+      <input type="radio" class="gr3_rd" name="graph3_rd" value="nonrandom_slice" /> Normal (750 0's, 250 1's)<br />
+      <input type="radio" class="gr3_rd" name="graph3_rd" value="long_nonrandom_slice" /> Long (7500 0's, 2500 1's)
       <div id="graph3"></div>
     </div>
 
@@ -135,7 +144,14 @@
         width = 760 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-
+    function get_radio_value(rd_id) {
+      var btns = document.getElementsByClassName(rd_id);
+      for (var i=0; i < btns.length; i++) {
+        if (btns[i].checked) {
+            return btns[i].value;
+          }
+       }
+    }
     /********** Tooltip Functions **********/
 
     var tooltipOver = function() {
@@ -474,7 +490,7 @@
 
 
     function graph2_update() {
-      d3.json("/ajax/clt_app/random_slice.json", function(err, j) { g2_data[j.data.sample_count_0].frequency++; g2_counter++; g2_redraw(); }).post()
+      d3.json("/ajax/clt_app/"+get_radio_value("gr2_rd")+".json", function(err, j) { g2_data[j.data.sample_count_0].frequency++; g2_counter++; g2_redraw(); }).post()
     }
 
     var graph2TimerId;
@@ -585,7 +601,7 @@
 
 
     function graph3_update() {
-      d3.json("/ajax/clt_app/nonrandom_slice.json", function(err, j) { g3_data[j.data.sample_count_0].frequency++; g3_counter++; g3_redraw(); }).post()
+      d3.json("/ajax/clt_app/"+get_radio_value("gr3_rd")+".json", function(err, j) { console.log(j.data.sample); g3_data[j.data.sample_count_0].frequency++; g3_counter++; g3_redraw(); }).post()
     }
 
     var graph3TimerId;
