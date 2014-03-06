@@ -80,16 +80,12 @@
     </div>
 
     <p>
-    That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers.<br />
-    Let's try the same experiment a second way, just to see. This time we're using python's standard (non-cryptographically-secure) random number generator.)
-    </p>
-
-    <p>
+    That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers. (Try the same experiment using both random number generators, just to be sure.)<br />
     Leave either of these running for long enough, and repeat the experiment enough times, and you should notice no real pattern to this randomness. It could be slightly different each time, but you won't see any regular shape appearing time after time.<br />
-    This is how we expect random generation to behave, and we've now verified that our random number generation is working correctly.<br />
+    This is exactly how we expect random generation to behave, and we've now verified that our random number generation is working correctly.<br />
     <br />
     So in our next scenario we'll try something else. Imagine we use our verified random number generator to create a very long list of random 1's and 0's. Then take a <i>sample</i> by pulling out 50 characters of that string, and count the number of 0's in that sample.<br />
-    We'll take these samples, and graph them, showing us how many 0's appeared. What would you expect the graph of those results to look like? Let's give it a try!
+    We'll take these samples, and graph them, showing us how many 0's appeared. Because this is a randomly generated string one might expect the result to look roughly similar to the first chart: random noise. Let's find out!
     </p>
 
     <div id="graph2_cont">
@@ -102,8 +98,8 @@
     </div>
 
     <p>
-    You may have to let it run for a bit before the curve really smooths out, try waiting for at least a thousand samples, but in the end you should begin to see a nice bell curve!<br />
-    This may not seem intuitive, but it perfectly illustrates the idea of the Central Limit Theorem! No matter what the underlying data is, these random samples will turn out to follow this normal curve.
+    For the random samples method it may take more than a thousand samples before the curve becomes extremely clear, but you can see it start to develop almost immediately. The end result is always the same, no matter how many times you run the experiment: a nice bell curve shape!<br />
+    This may not seem intuitive, but it perfectly illustrates the idea of the Central Limit Theorem! Regardless of the underlying data is, these random samples will turn out to follow this normal curve.<br />
     The above graph has two different ways of taking samples. One takes 50 random samples scattered from somewhere inside the large number. The second picks a starting point, and takes 50 contiguous numbers beginning there. If you run the experiment several times and test both methods you can see that both eventually get you to a bell-curved shape, but that the contiguous method takes longer. (At least 3 times as many samples as a rough approximation.)<br />
     </p>
 
@@ -141,6 +137,8 @@
 
     <script src="http://d3js.org/d3.v3.min.js"></script>
     <script>
+
+    // TODO: Label X Axis for all charts!
 
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
         width = 760 - margin.left - margin.right,
