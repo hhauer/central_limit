@@ -187,15 +187,17 @@
 
     var g1_barWidth = width/g1_data.length;
 
-    var g1_x = d3.scale.linear()
+    var g1_x = d3.scale.ordinal()
               .domain(g1_data.map(function(d) { return d.name; }))
-              .range([0, 70]);
+              .rangeRoundBands([0, width], 0.1); //70
 
     var g1_y = d3.scale.linear()
         .range([height, 0]);
 
     var g1_xAxis = d3.svg.axis()
         .scale(g1_x)
+        .tickSize(0)
+        .tickPadding(4)
         .orient("bottom");
 
     var g1_yAxis = d3.svg.axis()
