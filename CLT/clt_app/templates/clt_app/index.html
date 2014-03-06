@@ -54,7 +54,7 @@
   </style>
   </head>
   <body>
-    <h1>The Central Limit Theorem</h1>
+    <h1>The Central Limit Theorem, a graphical exploration</h1>
     <p>
     From <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Wikipedia</a>:<br />
     <div class="quote">In probability theory, the central limit theorem (CLT) states that, given certain conditions, the arithmetic mean of a sufficiently large number of iterates of independent random variables, each with a well-defined expected value and well-defined variance, will be approximately normally distributed.[1] That is, suppose that a sample is obtained containing a large number of observations, each observation being randomly generated in a way that does not depend on the values of the other observations, and that the arithmetic average of the observed values is computed. If this procedure is performed many times, the central limit theorem says that the computed values of the average will be distributed according to the normal distribution (commonly known as a "bell curve").</div>
@@ -62,7 +62,8 @@
 
     <p>
     <b>Whew.</b> I don't know about you, but that sounds complicated. Let's try and state it simply:<br />
-    When you take many sample measurements, the mean of those samples will form a bell curve shaped (normal) distribution.
+    When you take many sample measurements, the mean of those samples will form a bell curve shaped (normal) distribution.<br />
+    That sounds much friendlier. This tool will help you to explore exactly what that means and gain a intuitive visual understanding of the phenomenon.
     </p>
 
     <p>
@@ -72,7 +73,9 @@
     <div id="graph1_cont">
       <span id="graph1_toggle" class="btn_start" onClick="toggleGraph1()">Start</span> (ms between requests: <input type="text" id="graph1_speed" value="100">)
       <span id="graph1_reset" class="btn" onClick="resetGraph1()">Reset</span>
-      Number of Samples: <span id="graph1_counter">0</span>
+      Number of Samples: <span id="graph1_counter">0</span><br />
+      <input type="radio" class="gr1_rd" name="graph1_rd" value="random_integer" checked="true"/> "Normal" random generator<br />
+      <input type="radio" class="gr1_rd" name="graph1_rd" value="crypto_random" /> Cryptographically secure random generator
       <div id="graph1"></div>
     </div>
 
@@ -80,13 +83,6 @@
     That should look pretty evenly random right? And if you run it multiple times you sholud see different results, sometimes with tall spikes at certain numbers, sometimes with a very even distribution between all numbers.<br />
     Let's try the same experiment a second way, just to see. This time we're using python's standard (non-cryptographically-secure) random number generator.)
     </p>
-
-    <div id="graph1a_cont">
-      <span id="graph1a_toggle" class="btn_start" onClick="toggleGraph1a()">Start</span> (ms between requests: <input type="text" id="graph1a_speed" value="100">)
-      <span id="graph1a_reset" class="btn" onClick="resetGraph1a()">Reset</span>
-      Number of Samples: <span id="graph1a_counter">0</span>
-      <div id="graph1a"></div>
-    </div>
 
     <p>
     Leave either of these running for long enough, and repeat the experiment enough times, and you should notice no real pattern to this randomness. It could be slightly different each time, but you won't see any regular shape appearing time after time.<br />
@@ -100,7 +96,7 @@
       <span id="graph2_toggle" class="btn_start" onClick="toggleGraph2()">Start</span> (ms between requests: <input type="text" id="graph2_speed" value="100">)
       <span id="graph2_reset" class="btn" onClick="resetGraph2()">Reset</span>
       Number of Samples: <span id="graph2_counter">0</span><br />
-      <input type="radio" class="gr2_rd" name="graph2_rd" value="random_slice" /> Random Samples<br />
+      <input type="radio" class="gr2_rd" name="graph2_rd" value="random_slice" checked="true"/> Random Samples<br />
       <input type="radio" class="gr2_rd" name="graph2_rd" value="contig_random_slice" /> Contiguous Samples
       <div id="graph2"></div>
     </div>
@@ -108,6 +104,7 @@
     <p>
     You may have to let it run for a bit before the curve really smooths out, try waiting for at least a thousand samples, but in the end you should begin to see a nice bell curve!<br />
     This may not seem intuitive, but it perfectly illustrates the idea of the Central Limit Theorem! No matter what the underlying data is, these random samples will turn out to follow this normal curve.
+    The above graph has two different ways of taking samples. One takes 50 random samples scattered from somewhere inside the large number. The second picks a starting point, and takes 50 contiguous numbers beginning there. If you run the experiment several times and test both methods you can see that both eventually get you to a bell-curved shape, but that the contiguous method takes longer. (At least 3 times as many samples as a rough approximation.)<br />
     </p>
 
     <p>
@@ -130,10 +127,15 @@
     </div>
 
     <p>
-    This further confirms the theory, as we can see that the bell curve of normality centers right on the 75% mark.<br />
-    This example makes a bit more intuitive sense. A string of all 1's should be relatively rare, a string of all 0's should be more common, but most common sholud be some string that has a few of both.
+    In this example the contiguous test method shows a <b>very</b> skewed result, and does not look like a bell curve at all. If you were to throw away the outliers at the far ends of the graph the remaining data points do appear to form what could be a curve, which is worthless since the outlies contain most of the results, but it is interesting to observe.<br />
+    Given this, we can infer that for skewed underlying datasets it becomes increasingly important to correctly randomize your sample collection. If your randomization algorithm leads "clumping" in your sample selection you will not see the effects of the CLT on the sample mean graph.<br />
+    Both of the random methods further illustrate the CLT though, as we can see that the bell curve of normality centers right on the 75% mark, apparently independently of the length of the random string!<br />
+    This example makes a bit more intuitive sense. A string of all 1's should be relatively rare, a string of all 0's should be slightly more common, but most common sholud be some string that has a few of both.
     </p>
 
+    <p>
+    So that's the Central Limit Theorem! Why this is useful is left as a much larger educational exercise, but for now it's enough to observe that it does work. :-)
+    </p>
 
     <div id="infobox" style="display:none; background:red; position:absolute;"></div>
 
@@ -264,7 +266,7 @@
 
 
     function graph1_update() {
-      d3.json("/ajax/clt_app/crypto_random.json", function(err, j) { g1_data[j.data.integer].frequency++; g1_counter++; g1_redraw(); }).post()
+      d3.json("/ajax/clt_app/"+get_radio_value("gr1_rd")+".json", function(err, j) { g1_data[j.data.integer].frequency++; g1_counter++; g1_redraw(); }).post()
     }
 
     var graph1TimerId;
@@ -286,119 +288,6 @@
       g1_data.map(function(d){d.frequency=0;});
       g1_counter = 0;
       g1_redraw();
-    }
-
-
-    /********** GRAPH 1a **********/
-
-    // Set up and populate the data array for graph1
-    var g1a_data = [];
-    for(var i=0; i<11; i++) {
-      g1a_data[i] = {name: i, frequency:0 }
-    }
-
-    var g1a_counter = 0;
-
-    var g1a_barWidth = width/g1a_data.length;
-
-    var g1a_x = d3.scale.linear()
-              .domain(g1a_data.map(function(d) { return d.name; }))
-              .range([0, 70]);
-
-    var g1a_y = d3.scale.linear()
-        .range([height, 0]);
-
-    var g1a_xAxis = d3.svg.axis()
-        .scale(g1a_x)
-        .orient("bottom");
-
-    var g1a_yAxis = d3.svg.axis()
-        .scale(g1a_y)
-        .orient("left");
-
-    var g1a_svg = d3.select("#graph1a").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Draw graph 1's initial state
-    g1a_y.domain([0, d3.max(g1a_data, function(d) { return d.frequency; })]);
-
-    g1a_svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(g1a_xAxis);
-
-    g1a_svg.append("g")
-        .attr("class", "y-axis")
-        .call(g1a_yAxis)
-      .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 6)
-        .attr("dy", ".71em")
-        .style("text-anchor", "end")
-        .text("Frequency");
-
-    g1a_svg.selectAll(".bar")
-        .data(g1a_data)
-      .enter().append("rect")
-        .attr("transform", function(d, i) { return "translate(" + i * g1a_barWidth + ",0)"; })
-        .attr("class", "bar")
-        .attr("width", g1a_barWidth-4)
-        .attr("y", function(d) { return g1a_y(d.frequency); })
-        .attr("height", function(d) { return height - g1a_y(d.frequency); })
-        .on("mouseover", tooltipOver)
-        .on("mouseout", tooltipOut);
-
-    function g1a_redraw() {
-      g1a_y.domain([0, d3.max(g1a_data, function(d) { return d.frequency; })]);
-
-      function calcTicks() {
-        var m = d3.max(g1a_data, function(d) { return d.frequency; })
-        if(m<10)
-          return m;
-        else
-          return 10;
-      }
-
-      g1a_yAxis.ticks(calcTicks());
-      g1a_svg.selectAll("g .y-axis")
-        .call(g1a_yAxis);
-      g1a_svg.selectAll("g .x-axis")
-        .call(g1a_xAxis);
-
-      var bars = g1a_svg.selectAll(".bar")
-        .data(g1a_data)
-        .attr("y", function(d) { return g1a_y(d.frequency); })
-        .attr("height", function(d) { return height-g1a_y(d.frequency); })
-
-      d3.select("#graph1a_counter").text(g1a_counter);
-    }
-
-    function graph1a_update() {
-      d3.json("/ajax/clt_app/random_integer.json", function(err, j) { g1a_data[j.data.integer].frequency++; g1a_counter++; g1a_redraw(); }).post()
-    }
-
-    var graph1aTimerId;
-
-    function toggleGraph1a(){
-      if(d3.select("#graph1a_toggle").text() == "Start")
-      {
-        graph1aTimerId = window.setInterval(graph1a_update, document.getElementById("graph1a_speed").value);
-        d3.select("#graph1a_toggle").text("Stop").attr("class", "btn_stop");
-      }
-      else
-      {
-        window.clearInterval(graph1aTimerId);
-        d3.select("#graph1a_toggle").text("Start").attr("class", "btn_start");
-      }
-    }
-
-    function resetGraph1a(){
-      g1a_data.map(function(d){d.frequency=0;});
-      g1a_counter = 0;
-      g1a_redraw();
     }
 
 
