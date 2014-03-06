@@ -49,3 +49,19 @@ def nonrandom_slice(request):
     }
 
     return data
+
+def long_nonrandom_slice(request):
+    string = '0' * 7500 + '1' * 2500 # String of 7500 zeroes and 2500 ones.
+
+    sample = random.sample(string, 50)
+
+    data = {
+        'string_count_0': 7500,
+        'string_count_1': 2500,
+        'string': string,
+        'sample': sample,
+        'sample_count_0': sample.count('0'),
+        'sample_count_1': sample.count('1'),
+    }
+
+    return data

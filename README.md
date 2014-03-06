@@ -20,3 +20,6 @@ which expects to do crazy things like, I don't know, modify a model.)
 
 * /ajax/clt_app/nonrandom_slice.json
         As above with the random_slice operation, but always uses a skewed string of 750 zeroes and 250 ones. Returns the same members.
+
+* /ajax/clt_app/long_nonrandom_slice.json
+        Just like the nonrandom_slice endpoint, but with a string that's 7500 zeros, followed by 2500 ones.
