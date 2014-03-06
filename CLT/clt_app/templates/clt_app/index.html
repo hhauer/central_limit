@@ -93,33 +93,25 @@
         width = 760 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-    var tooltipOver = function() {
-      //var circle = d3.select(this);
-      //circle.attr("fill", "red" );
 
-      // show infobox div on mouseover.
-      // block means sorta "render on the page" whereas none would mean "don't render at all"
+    /********** Tooltip Functions **********/
+
+    var tooltipOver = function() {
       d3.select("#infobox").style("display", "block");
-      // add test to p tag in infobox
       d3.select("#infobox").text(this.__data__.name + " occurred "+this.__data__.frequency+" times.");
     }
 
     var tooltipOut = function() {
-      //var circle = d3.select(this);
-      //circle.attr("fill", "steelblue" );
-      // display none removes element totally, whereas visibilty in last example just hid it
       d3.select("#infobox").style("display", "none");
     }
 
+    // The tooltip just always moves around... Good thing we have CPU cycles to spare. 
     var tooltipMove = function() {
       var infobox = d3.select("#infobox");
       var coord = d3.mouse(this)
-
-      // now we just position the infobox roughly where our mouse is
       infobox.style("left", coord[0] + 15 + "px" );
       infobox.style("top", coord[1] + "px");
     }
-
     d3.select("body").on('mousemove', tooltipMove);
 
 
@@ -139,7 +131,7 @@
 
     var g1_x = d3.scale.linear()
               .domain(g1_data.map(function(d) { return d.name; }))
-              .range([1,width]);
+              .range([0, 70]);
 
     var g1_y = d3.scale.linear()
         .range([height, 0]);
@@ -181,18 +173,11 @@
       .enter().append("rect")
         .attr("transform", function(d, i) { return "translate(" + i * g1_barWidth + ",0)"; })
         .attr("class", "bar")
-        //.attr("x", function(d) { return g1_x(d.name*g1_barWidth); })
-        .attr("width", g1_barWidth-4)//x.rangeBand())
+        .attr("width", g1_barWidth-4)
         .attr("y", function(d) { return g1_y(d.frequency); })
         .attr("height", function(d) { return height - g1_y(d.frequency); })
         .on("mouseover", tooltipOver)
         .on("mouseout", tooltipOut);
-        //.append("text")
-        //  .attr("x", g1_x.rangeBand() / 2)
-        //  .text(function(d){ return d.name; });
-      //.transition().
-      //  .attr("y", function(d) { return y(d.frequency); })
-      //  .attr("height", function(d) { return height - y(d.frequency); });
 
   function g1_redraw() {
     g1_y.domain([0, d3.max(g1_data, function(d) { return d.frequency; })]);
@@ -280,7 +265,6 @@
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     // Draw graph 2's initial state
-    //x.domain(datv.map(function(d) { return d.name; }));
     g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
 
     g2_svg.append("g")
@@ -308,9 +292,6 @@
         .attr("height", function(d) { return height - g2_y(d.frequency); })
         .on("mouseover", tooltipOver)
         .on("mouseout", tooltipOut);
-      //.transition().
-      //  .attr("y", function(d) { return y(d.frequency); })
-      //  .attr("height", function(d) { return height - y(d.frequency); });
 
   function g2_redraw() {
     g2_y.domain([0, d3.max(g2_data, function(d) { return d.frequency; })]);
