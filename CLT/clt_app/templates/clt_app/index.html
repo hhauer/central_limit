@@ -58,6 +58,7 @@
   </style>
   </head>
   <body>
+    <div class="grid">
     <h1>The Central Limit Theorem, a graphical exploration</h1>
     <p>
     From <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Wikipedia</a>:<br />
@@ -146,11 +147,15 @@
     //  NOTE: This is for PROGRAMMERS, and thus it is zero-indexed. 3 graphs => numGraphs = 2
     var numGraphs = 2;
 
+    // Set desired graph aspect ratio
+    var tGraphWidth = 960,
+        tGraphHeight = 400
 
     /********** Global Variable Declarations **********/
     var margin = {top: 20, right: 20, bottom: 30, left: 40},
-        width = 760 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+        width = tGraphWidth - margin.left - margin.right,
+        height = tGraphHeight - margin.top - margin.bottom
+        ratio = tGraphWidth/tGraphHeight;
 
     var graphs = new Array(numGraphs);
     for(i=0; i<=numGraphs; i++)
@@ -246,6 +251,17 @@
     }
 
 
+    /*
+     * Make the graph responsive and resizable. Because who doesn't love that?
+     */
+    function resizeGraphToParent(p_num) {
+      var g = $("#graph"+i+" svg");
+      var targetWidth = g.parent().width();
+      g.attr("width", targetWidth);
+      g.attr("height", targetWidth / ratio);
+    }
+
+
     /********** Tooltip Functions **********/
 
     var tooltipOver = function() {
@@ -332,6 +348,8 @@
       graphs[i].svg = d3.select("#graph"+i).append("svg")
           .attr("width", width + margin.left + margin.right)
           .attr("height", height + margin.top + margin.bottom)
+          .attr("preserveAspectRatio", "xMidYMid")
+          .attr("viewBox", "0 0 960 400")
         .append("g")
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -363,8 +381,23 @@
           .attr("height", function(d) { return height - graphs[i].y(d.frequency); })
           .on("mouseover", tooltipOver)
           .on("mouseout", tooltipOut);
+
+      resizeGraphToParent(i);
     }
 
+
+    /*
+     * Trigger resize on all graphs when the window resizes.
+     */
+    $(window).on("resize", function() {
+        for(i=0; i<=numGraphs; i++)
+        {
+          resizeGraphToParent(i);
+        }
+    });
+
     </script>
+
+    </div>
   </body>
 </html>
