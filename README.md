@@ -23,3 +23,7 @@ which expects to do crazy things like, I don't know, modify a model.)
 
 * /ajax/clt_app/long_nonrandom_slice.json
         Just like the nonrandom_slice endpoint, but with a string that's 7500 zeros, followed by 2500 ones.
+
+# Credits #
+clt_app by Harley Hauer and Joshua Proehl
+Ajax code originally from joestump/django-ajax updated for Django 1.6 by Harley Hauer
